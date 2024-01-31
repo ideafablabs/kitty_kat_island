@@ -1,3 +1,4 @@
+// simple bounce code to test basic operation of stepper
 #include <AccelStepper.h>
 
 #define PUL = 9;    // PUL- pin
