@@ -10,7 +10,7 @@ AccelStepper stepper(1, PUL, DIR);
 void setup()
 {  
   // Change these to suit your stepper if you want
-  stepper.setMaxSpeed(100);
+  stepper.setMaxSpeed(1000);
   stepper.setAcceleration(20);
   stepper.moveTo(500);
 }
