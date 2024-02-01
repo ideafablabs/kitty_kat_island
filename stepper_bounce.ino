@@ -7,19 +7,19 @@
 // Define a stepper and the pins it will use
 AccelStepper stepper(1, PUL, DIR);
 
-void setup()
-{  
+void setup() {  
   // Change these to suit your stepper if you want
   stepper.setMaxSpeed(1000);
   stepper.setAcceleration(20);
   stepper.moveTo(500);
 }
 
-void loop()
-{
-    // If at the end of travel go to the other end
-    if (stepper.distanceToGo() == 0)
-      stepper.moveTo(-stepper.currentPosition());
+void loop() {
+  // If at the end of travel go to the other end
+  if (stepper.distanceToGo() == 0)
+    stepper.moveTo(-stepper.currentPosition());
 
-    stepper.run();
+  stepper.run();
 }
+
+// sfranzyshen
