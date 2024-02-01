@@ -21,7 +21,9 @@ AccelStepper stepper(1, PUL, DIR);
 void setup() {
   Serial.begin(115200);
   Serial.println("Startup ...");
-
+  
+  // Initialize digital pins
+  pinMode(LED_BUILTIN, OUTPUT);
   pinMode(JUP, INPUT_PULLUP); 
   pinMode(JDN, INPUT_PULLUP);
   pinMode(JLT, INPUT_PULLUP);
