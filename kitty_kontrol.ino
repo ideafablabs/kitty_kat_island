@@ -12,16 +12,17 @@
 #define LLS A0  // Left Limit Switch pin
 #define RLS A1  // Right Limit Switch pin
 
-int MaxSpeed = 1000;
-int Acceleration = 20;
+int MaxSpeed = 2000;
+int Acceleration = 0;
+//int Direction = 1;
 
 // Define the stepper and the pins used
-AccelStepper stepper(1, PUL, DIR);
+AccelStepper stepper(AccelStepper::DRIVER, PUL, DIR);
 
 void setup() {
   Serial.begin(115200);
   Serial.println("Startup ...");
-  
+
   // Initialize digital pins
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(JUP, INPUT_PULLUP); 
@@ -30,7 +31,8 @@ void setup() {
   pinMode(JRT, INPUT_PULLUP);
   pinMode(LLS, INPUT_PULLUP);
   pinMode(RLS, INPUT_PULLUP);
-  
+
+  // Initialize stepper settings
   stepper.setMaxSpeed(MaxSpeed);
   stepper.setAcceleration(Acceleration);
 }
