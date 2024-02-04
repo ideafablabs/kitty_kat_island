@@ -1,6 +1,8 @@
 // kitty_kontrol.ino - code to kontrol operation of stepper motor in the cats head
 // 1/31/2024 - Idea Fab Labs, Chico
 
+#include <AccelStepper.h>
+
 // Pin usage defines
 #define PUL   9   // Stepper Pulse pin
 #define DIR   8   // Stepper Direction pin
@@ -17,14 +19,12 @@
 #define CW    1
 #define CCW   2
 
-#include <AccelStepper.h>
-
 // Variables
 int MaxSpeed        = 1000; // maximum speed for stepper
 int MinSpeed        = 20;   // minimum speed for stepper
 int RUNNING         = 0;    // are we moving? and in what direction? 0=stopped 1=forward 2=reverse
 //int Acceleration  = 20;
-int Speed = STOP;           // Initial speed stopped
+int Speed           = STOP; // Initial speed stopped
 int JoyLeft_curr    = HIGH;
 int JoyLeft_last    = HIGH;
 int JoyRight_curr   = HIGH;
@@ -41,6 +41,7 @@ int stateLeft_last  = HIGH;
 // Define the stepper and the pins used
 AccelStepper stepper(AccelStepper::DRIVER, PUL, DIR);
 
+// The setup
 void setup() {
   Serial.begin(115200); // Initialize Serial
   Serial.println("Startup ...");
@@ -65,12 +66,14 @@ void setup() {
   stepper.setSpeed(Speed);
 }
 
+// The loop 
 void loop() {
   checkLimits();
   readJoystick();
   moveStepper();
 }
 
+// Move stepper / update speed
 void moveStepper() {
   if(RUNNING > STOP) {
     readSpeed();
@@ -84,6 +87,7 @@ void moveStepper() {
   stepper.runSpeed();
 }
 
+// Check limit-switches & Process 
 void checkLimits() {
   if(stateRight_curr != stateRight_last) {
     Serial.println("Right Limit Hit! ...");
@@ -108,6 +112,7 @@ void checkLimits() {
   }
 }
 
+// Read joystick switches & Process
 void readJoystick() {
   JoyLeft_curr  = digitalRead(JLT);
   JoyRight_curr = digitalRead(JRT);
@@ -165,14 +170,17 @@ void readJoystick() {
   }
 }
 
+// Read analog potentiometer / calculate speed
 void readSpeed() {
  Speed = map((analogRead(SPD)), 0, 1023, MinSpeed, MaxSpeed);
 }
 
+// Left limit-switch ISR
 void limitLeft() {
   stateLeft_curr = LOW;  // slim and clean ISR
 }
 
+// Right limit-switch ISR
 void limitRight() {
   stateRight_curr = LOW;  // slim and clean ISR
 }
