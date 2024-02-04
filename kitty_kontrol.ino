@@ -69,6 +69,10 @@ void setup() {
 void loop() {
   checkLimits();
   readJoystick();
+  moveStepper();
+}
+
+void moveStepper() {
   if(RUNNING > STOP) {
     readSpeed();
     if(RUNNING == CW) {
@@ -167,11 +171,11 @@ void readSpeed() {
 }
 
 void limitLeft() {
-  stateLeft_curr = LOW;
+  stateLeft_curr = LOW;  // slim and clean ISR
 }
 
 void limitRight() {
-  stateRight_curr = LOW;
+  stateRight_curr = LOW;  // slim and clean ISR
 }
 
 
