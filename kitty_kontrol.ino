@@ -2,15 +2,15 @@
 // 1/31/2024 - Idea Fab Labs, Chico
 
 // Pin usage defines
-#define PUL 9    // Stepper Pulse pin
-#define DIR 8    // Stepper Direction pin
-#define JUP 6  // Joystick Up pin
-#define JDN 4  // Joystick Down pin
-#define JLT 5    // Joystick Left pin
-#define JRT 7    // Joystick Right pin
-#define LLS 3   // Left Limit Switch pin
-#define RLS 2   // Right Limit Switch pin
-#define SPD A0  // potentiometer for speed pin
+#define PUL   9   // Stepper Pulse pin
+#define DIR   8   // Stepper Direction pin
+#define JUP   6   // Joystick Up pin
+#define JDN   4   // Joystick Down pin
+#define JLT   5   // Joystick Left pin
+#define JRT   7   // Joystick Right pin
+#define LLS   3   // Left Limit Switch pin
+#define RLS   2   // Right Limit Switch pin
+#define SPD   A0  // potentiometer for speed pin
 
 // direction
 #define STOP  0
@@ -20,30 +20,29 @@
 #include <AccelStepper.h>
 
 // Variables
-int MaxSpeed = 1000;  // maximum speed for stepper
-int MinSpeed = 20;    // minimum speed for stepper
-int RUNNING = 0;      // are we moving? and in what direction? 0=stopped 1=forward 2=reverse
-//int Acceleration = 20;
-int Speed = STOP;     // Initial speed
-int JoyLeft_curr = HIGH;
-int JoyLeft_last = HIGH;
-int JoyRight_curr = HIGH;
-int JoyRight_last = HIGH;
-int JoyUp_curr = HIGH;
-int JoyUp_last = HIGH;
-int JoyDown_curr = HIGH;
-int JoyDown_last = HIGH;
+int MaxSpeed        = 1000; // maximum speed for stepper
+int MinSpeed        = 20;   // minimum speed for stepper
+int RUNNING         = 0;    // are we moving? and in what direction? 0=stopped 1=forward 2=reverse
+//int Acceleration  = 20;
+int Speed = STOP;           // Initial speed stopped
+int JoyLeft_curr    = HIGH;
+int JoyLeft_last    = HIGH;
+int JoyRight_curr   = HIGH;
+int JoyRight_last   = HIGH;
+int JoyUp_curr      = HIGH;
+int JoyUp_last      = HIGH;
+int JoyDown_curr    = HIGH;
+int JoyDown_last    = HIGH;
 int stateRight_curr = HIGH;
-int stateLeft_curr = HIGH;
+int stateLeft_curr  = HIGH;
 int stateRight_last = HIGH;
-int stateLeft_last = HIGH;
+int stateLeft_last  = HIGH;
 
 // Define the stepper and the pins used
 AccelStepper stepper(AccelStepper::DRIVER, PUL, DIR);
 
 void setup() {
-  // Initialize Serial
-  Serial.begin(115200);
+  Serial.begin(115200); // Initialize Serial
   Serial.println("Startup ...");
 
 // Initialize digital pins
@@ -110,10 +109,10 @@ void checkLimits() {
 }
 
 void readJoystick() {
-  JoyLeft_curr = digitalRead(JLT);
+  JoyLeft_curr  = digitalRead(JLT);
   JoyRight_curr = digitalRead(JRT);
-  JoyUp_curr = digitalRead(JUP);
-  JoyDown_curr = digitalRead(JDN);
+  JoyUp_curr    = digitalRead(JUP);
+  JoyDown_curr  = digitalRead(JDN);
 
   if(JoyLeft_curr != JoyLeft_last) {
     if(JoyLeft_curr == HIGH) {
