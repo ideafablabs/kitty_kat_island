@@ -1,9 +1,7 @@
 // kitty_kontrol.ino - code to kontrol operation of stepper motor in the cats head
 // 1/31/2024 - Idea Fab Labs, Chico
 
-#include <AccelStepper.h>
-
-// Pin usage
+// Pin usage defines
 #define PUL 9    // Stepper Pulse pin
 #define DIR 8    // Stepper Direction pin
 //#define JUP 6  // Joystick Up pin
@@ -12,14 +10,16 @@
 #define JRT 7    // Joystick Right pin
 #define LLS 3   // Left Limit Switch pin
 #define RLS 2   // Right Limit Switch pin
+#define SPD A0  // potentiometer for speed pin
 
-// Speeds
+// Preset Speeds
 #define STOP 0
-#define FORW 1000
-#define REVE -1000
+
+#include <AccelStepper.h>
 
 // Variables
-int MaxSpeed = 2000;
+int MaxSpeed = 1000;  // maximum speed for stepper
+int MinSpeed = 20;    // minimum speed for stepper
 //int Acceleration = 20;
 int Speed = STOP;  // Initial speed
 int JoyLeft_curr = HIGH;
@@ -58,7 +58,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(RLS), limitRight, FALLING);
 
 // Initialize stepper settings
-  //stepper.setAcceleration(20.0);
+  //stepper.setAcceleration(Acceleration);
   stepper.setMaxSpeed(MaxSpeed);
   stepper.setSpeed(Speed);
 }
@@ -115,7 +115,7 @@ void readJoystick() {
         stateRight_curr = HIGH;        
       }
       Serial.println("Left ...");
-      Speed = FORW;
+      readSpeed();
       //stepper.setAcceleration(Acceleration);
       stepper.setSpeed(Speed);
       digitalWrite(LED_BUILTIN, HIGH);
@@ -141,13 +141,18 @@ void readJoystick() {
         stateLeft_curr = HIGH;        
       }
       Serial.println("Right ...");
-      Speed = REVE;
+      readSpeed();
+      Speed = -Speed;
       //stepper.setAcceleration(Acceleration);
       stepper.setSpeed(Speed);
       digitalWrite(LED_BUILTIN, HIGH);
     }
     JoyRight_last = JoyRight_curr;
   }
+}
+
+void readSpeed() {
+ Speed = map((analogRead(SPD)), 0, 1023, MinSpeed, MaxSpeed);
 }
 
 void limitLeft() {
