@@ -29,14 +29,14 @@
 #define CCW   2
 
 // Predefined RGB Led patterns
-#define CWR	0	// colorWipeRed
-#define CWG	1	// colorWipeGreen
-#define CWB	2	// colorWipeBlue
-#define TCW	3	// theaterChaseWhite
-#define TCR	4	// theaterChaseRed
-#define TCB	5	// theaterChaseBlue
-#define RNB	6	// rainbow
-#define TCR	7	// theaterChaseRainbow
+#define CWR	  0	// colorWipeRed
+#define CWG	  1	// colorWipeGreen
+#define CWB	  2	// colorWipeBlue
+#define TCW	  3	// theaterChaseWhite
+#define TCR	  4	// theaterChaseRed
+#define TCB	  5	// theaterChaseBlue
+#define RNB	  6	// rainbow
+#define TCRB	7	// theaterChaseRainbow
 
 // Stepper variables
 int MaxSpeed          = 500; // maximum speed for stepper
@@ -318,7 +318,7 @@ void Neoloop() {
   if(currentMillis - pixelPrevious >= pixelInterval) {        //  Check for expired time
     pixelPrevious = currentMillis;                            //  Run current frame
     switch (patternCurrent) {
-      case TCR:
+      case TCRB:
         theaterChaseRainbow(50); // Rainbow-enhanced theaterChase variant
         break;
       case RNB:
