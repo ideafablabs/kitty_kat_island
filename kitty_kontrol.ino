@@ -45,7 +45,7 @@ int MinSpeed          = 25;    // minimum speed for stepper
 #define TCB  5  // theaterChaseBlue
 #define RNB  6  // rainbow
 #define TCRB 7  // theaterChaseRainbow
-#define BLK  7  // allblack (off)
+#define BLK  8  // allblack (off)
 
 // Stepper more variables
 int Speed             = STOP;  // initial speed stopped
