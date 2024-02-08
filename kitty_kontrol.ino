@@ -3,7 +3,6 @@
 // current issue: runSpeed() doesn't support acceleration ...
 
 #include <AccelStepper.h>
-//#include <Servo.h>
 #include <Adafruit_NeoPixel.h>
 #include <Adafruit_TiCoServo.h>
 
