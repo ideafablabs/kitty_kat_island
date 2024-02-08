@@ -14,8 +14,8 @@
 #define JLT   5   // Joystick Left pin (input)
 #define JRT   7   // Joystick Right pin (input)
 #define SRV   10  // Servo pin (output)
-#define AB1   A2  // Arcade button #1 pin (input)
-#define AB2   11  // Arcade button #2 pin (input)
+#define ABA   A2  // Arcade button #A pin (input)
+#define ABB   11  // Arcade button #B pin (input)
 #define LLS   3   // Left Limit Switch pin (input ~ interrupt)
 #define RLS   2   // Right Limit Switch pin (input ~ interrupt)
 #define SPD   A0  // Potentiometer for speed pin (input ~ analog)
@@ -23,32 +23,36 @@
 #define RGB   A1  // Neopixel pin (output)
 #define LEDS  8   // Number of Neopixels
 
-// direction
+// Stepper predefined direction
 #define STOP  0
 #define CW    1
 #define CCW   2
 
+// servo predefined positions
+#define SRVO_ON   0     // servo laser On position
+#define SRVO_OFF  90    // servo laser Off position
+
 // Predefined RGB Led patterns
-#define CWR	  0	// colorWipeRed
-#define CWG	  1	// colorWipeGreen
-#define CWB	  2	// colorWipeBlue
-#define TCW	  3	// theaterChaseWhite
-#define TCR	  4	// theaterChaseRed
-#define TCB	  5	// theaterChaseBlue
-#define RNB	  6	// rainbow
-#define TCRB	7	// theaterChaseRainbow
+#define CWR  0  // colorWipeRed
+#define CWG  1  // colorWipeGreen
+#define CWB  2  // colorWipeBlue
+#define TCW  3  // theaterChaseWhite
+#define TCR  4  // theaterChaseRed
+#define TCB  5  // theaterChaseBlue
+#define RNB  6  // rainbow
+#define TCRB 7  // theaterChaseRainbow
 
 // Stepper variables
-int MaxSpeed          = 500; // maximum speed for stepper
-int MinSpeed          = 25;   // minimum speed for stepper
-int Speed             = STOP; // initial speed stopped
-//int MaxAcceleration = 200;  // maximum acceleration for stepper
-//int MinAcceleration = 20;   // minimum acceleration for stepper
-//int Acceleration    = 20;   // initial acceleration rate
-int RUNNING           = STOP; // are we moving? and in what direction?
-bool AUTOMATIC        = false;// are we in automatic (bounce) mode
+int MaxSpeed          = 500;   // maximum speed for stepper
+int MinSpeed          = 25;    // minimum speed for stepper
+int Speed             = STOP;  // initial speed stopped
+//int MaxAcceleration = 200;   // maximum acceleration for stepper
+//int MinAcceleration = 20;    // minimum acceleration for stepper
+//int Acceleration    = 20;    // initial acceleration rate
+int RUNNING           = STOP;  // are we moving? and in what direction?
+bool AUTOMATIC        = false; // are we in automatic (bounce) mode
 
-// Joystick variables
+// Joystick  & Arcade button variables
 int JoyLeft_curr    = HIGH;
 int JoyLeft_last    = HIGH;
 int JoyRight_curr   = HIGH;
@@ -57,6 +61,10 @@ int JoyUp_curr      = HIGH;
 int JoyUp_last      = HIGH;
 int JoyDown_curr    = HIGH;
 int JoyDown_last    = HIGH;
+int ArcadeA_curr      = HIGH;
+int ArcadeA_last      = HIGH;
+int ArcadeB_curr    = HIGH;
+int ArcadeB_last    = HIGH;
 
 // Interrupts variables
 int stateRight_curr = HIGH;
@@ -83,7 +91,8 @@ Adafruit_NeoPixel strip(LEDS, RGB, NEO_GRB + NEO_KHZ800);
 
 // Define servo object to control a servo
 Servo servo;
-int Servopos = 0;
+int Servo_curr = SRVO_OFF;
+int Servo_last = SRVO_OFF;
 
 // The setup
 void setup() {
@@ -96,13 +105,15 @@ void setup() {
   strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
   
 // Initialize digital pins
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, LOW);
-  pinMode(JUP, INPUT_PULLUP); 
-  pinMode(JDN, INPUT_PULLUP);
-  pinMode(JLT, INPUT_PULLUP);
-  pinMode(JRT, INPUT_PULLUP);
-
+  pinMode(LED_BUILTIN, OUTPUT);   // onboard LED
+  digitalWrite(LED_BUILTIN, LOW); 
+  pinMode(JUP, INPUT_PULLUP);     // Joystick up
+  pinMode(JDN, INPUT_PULLUP);     // Joystick down
+  pinMode(JLT, INPUT_PULLUP);     // Joystick left
+  pinMode(JRT, INPUT_PULLUP);     // Joystick right
+  pinMode(ABA, INPUT_PULLUP);     // Arcade button A
+  pinMode(ABB, INPUT_PULLUP);     // Arcade button B
+  
 // Initialize Limit-switch Interrupts
   pinMode(LLS, INPUT_PULLUP);
   pinMode(RLS, INPUT_PULLUP);
@@ -116,22 +127,25 @@ void setup() {
 
 // Initialize servo settings
   servo.attach(SRV);  // attaches the servo to the servo object
-  servo.write(Servopos);
+  servo.write(Servo_curr);
 }
 
 // The loop 
 void loop() {
   checkLimits();
   readJoystick();
-  readArcade();
   moveStepper();
+  readArcade();
   moveServo();
   Neoloop();
 }
 
-// Move stepper / update speed
+// Move servo
 void moveServo() {
-  return;
+  if(Servo_curr != Servo_last) {
+    servo.write(Servo_curr);
+    Servo_last = Servo_curr;
+  }
 }
 
 // Move stepper / update speed
@@ -185,7 +199,16 @@ void checkLimits() {
 
 // Read Arcade buttons & Process
 void readArcade() {
-  return; 
+  ArcadeA_curr = digitalRead(ABA);
+  ArcadeB_curr = digitalRead(ABB);
+  
+  if(ArcadeA_curr != ArcadeA_last) {
+    ArcadeA_last = ArcadeA_curr;
+  }
+
+  if(ArcadeB_curr != ArcadeB_last) {
+    ArcadeB_last = ArcadeB_curr;
+  }
 }
 
 // Read joystick switches & Process
