@@ -1,6 +1,8 @@
 // kitty_kontrol.ino - code to kontrol operation of stepper motor in the cats head (and more)
 // 1/31/2024 - Idea Fab Labs, Chico
+
 // current issue: runSpeed() doesn't support acceleration ...
+// see https://github.com/bblanchon/ArduinoContinuousStepper for future solution
 
 #include <AccelStepper.h>
 #include <Adafruit_NeoPixel.h>
