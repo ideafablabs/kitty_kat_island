@@ -3,23 +3,40 @@
 // current issue: runSpeed() doesn't support acceleration ...
 
 #include <AccelStepper.h>
+#include <Servo.h>
+#include <Adafruit_NeoPixel.h>
 
 // Pin usage defines
-#define PUL   9   // Stepper Pulse pin
-#define DIR   8   // Stepper Direction pin
-#define JUP   6   // Joystick Up pin
-#define JDN   4   // Joystick Down pin
-#define JLT   5   // Joystick Left pin
-#define JRT   7   // Joystick Right pin
-#define LLS   3   // Left Limit Switch pin
-#define RLS   2   // Right Limit Switch pin
-#define SPD   A0  // Potentiometer for speed pin
-//#define ACC   A1  // Potentiometer for acceleration pin
+#define PUL   9   // Stepper Pulse pin (output)
+#define DIR   8   // Stepper Direction pin (output)
+#define JUP   6   // Joystick Up pin (input)
+#define JDN   4   // Joystick Down pin (input)
+#define JLT   5   // Joystick Left pin (input)
+#define JRT   7   // Joystick Right pin (input)
+#define SRV   10  // Servo pin (output)
+#define AB1   A2  // Arcade button #1 pin (input)
+#define AB2   11  // Arcade button #2 pin (input)
+#define LLS   3   // Left Limit Switch pin (input ~ interrupt)
+#define RLS   2   // Right Limit Switch pin (input ~ interrupt)
+#define SPD   A0  // Potentiometer for speed pin (input ~ analog)
+//#define ACC   A7  // Potentiometer for acceleration pin (input ~ analog)
+#define RGB   A1  // Neopixel pin (output)
+#define LEDS  8   // Number of Neopixels
 
 // direction
 #define STOP  0
 #define CW    1
 #define CCW   2
+
+// Predefined RGB Led patterns
+#define CWR	0	// colorWipeRed
+#define CWG	1	// colorWipeGreen
+#define CWB	2	// colorWipeBlue
+#define TCW	3	// theaterChaseWhite
+#define TCR	4	// theaterChaseRed
+#define TCB	5	// theaterChaseBlue
+#define RNB	6	// rainbow
+#define TCR	7	// theaterChaseRainbow
 
 // Stepper variables
 int MaxSpeed          = 500; // maximum speed for stepper
@@ -47,14 +64,37 @@ int stateLeft_curr  = HIGH;
 int stateRight_last = HIGH;
 int stateLeft_last  = HIGH;
 
+// neopixel variables
+unsigned long    pixelPrevious     = 0;        // Previous Pixel Millis
+//unsigned long    patternPrevious   = 0;        // Previous Pattern Millis
+int              patternCurrent    = RNB;      // Current Pattern Number (Rainbow)
+//int              patternInterval   = 5000;     // Pattern Interval (ms)
+int              pixelInterval     = 50;       // Pixel Interval (ms)
+int              pixelQueue        = 0;        // Pattern Pixel Queue
+int              pixelCycle        = 0;        // Pattern Pixel Cycle
+uint16_t         pixelCurrent      = 0;        // Pattern Current Pixel Number
+uint16_t         pixelNumber       = LEDS;     // Total Number of Pixels
+
 // Define the stepper and the pins used
 AccelStepper stepper(AccelStepper::DRIVER, PUL, DIR);
+
+// Define ws2812 leds
+Adafruit_NeoPixel strip(LEDS, RGB, NEO_GRB + NEO_KHZ800);
+
+// Define servo object to control a servo
+Servo servo;
+int Servopos = 0;
 
 // The setup
 void setup() {
   Serial.begin(115200); // Initialize Serial
   Serial.println("Startup ...");
 
+// Initialize NeoPixel driver  
+  strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+  strip.show();            // Turn OFF all pixels ASAP
+  strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
+  
 // Initialize digital pins
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
@@ -73,13 +113,25 @@ void setup() {
   //stepper.setAcceleration(Acceleration);
   stepper.setMaxSpeed(MaxSpeed);
   stepper.setSpeed(Speed);
+
+// Initialize servo settings
+  servo.attach(SRV);  // attaches the servo to the servo object
+  servo.write(Servopos);
 }
 
 // The loop 
 void loop() {
   checkLimits();
   readJoystick();
+  readArcade();
   moveStepper();
+  moveServo();
+  Neoloop();
+}
+
+// Move stepper / update speed
+void moveServo() {
+  return;
 }
 
 // Move stepper / update speed
@@ -129,6 +181,11 @@ void checkLimits() {
       }
     }
   }
+}
+
+// Read Arcade buttons & Process
+void readArcade() {
+  return; 
 }
 
 // Read joystick switches & Process
@@ -253,6 +310,118 @@ void limitLeft() {
 void limitRight() {
   stateRight_curr = LOW;  // slim and clean ISR
 }
+
+// Neopixel routines
+void Neoloop() {
+  unsigned long currentMillis = millis();                     //  Update current time
+  
+  if(currentMillis - pixelPrevious >= pixelInterval) {        //  Check for expired time
+    pixelPrevious = currentMillis;                            //  Run current frame
+    switch (patternCurrent) {
+      case TCR:
+        theaterChaseRainbow(50); // Rainbow-enhanced theaterChase variant
+        break;
+      case RNB:
+        rainbow(10); // Flowing rainbow cycle along the whole strip
+        break;     
+      case TCB:
+        theaterChase(strip.Color(0, 0, 127), 50); // Blue
+        break;
+      case TCR:
+        theaterChase(strip.Color(127, 0, 0), 50); // Red
+        break;
+      case TCW:
+        theaterChase(strip.Color(127, 127, 127), 50); // White
+        break;
+      case CWB:
+        colorWipe(strip.Color(0, 0, 255), 50); // Blue
+        break;
+      case CWG:
+        colorWipe(strip.Color(0, 255, 0), 50); // Green
+        break;        
+      default:
+        colorWipe(strip.Color(255, 0, 0), 50); // Red
+        break;
+    }
+  }
+}
+
+void colorWipe(uint32_t color, int wait) {
+  if(pixelInterval != wait)
+    pixelInterval = wait;                   //  Update delay time
+  strip.setPixelColor(pixelCurrent, color); //  Set pixel's color (in RAM)
+  strip.show();                             //  Update strip to match
+  pixelCurrent++;                           //  Advance current pixel
+  if(pixelCurrent >= pixelNumber)           //  Loop the pattern from the first LED
+    pixelCurrent = 0;
+}
+
+// Theater-marquee-style chasing lights. Pass in a color (32-bit value,
+// a la strip.Color(r,g,b) as mentioned above), and a delay time (in ms)
+// between frames.
+void theaterChase(uint32_t color, int wait) {
+  if(pixelInterval != wait)
+    pixelInterval = wait;                   //  Update delay time
+  for(int i = 0; i < pixelNumber; i++) {
+    strip.setPixelColor(i + pixelQueue, color); //  Set pixel's color (in RAM)
+  }
+  strip.show();                             //  Update strip to match
+  for(int i=0; i < pixelNumber; i+=3) {
+    strip.setPixelColor(i + pixelQueue, strip.Color(0, 0, 0)); //  Set pixel's color (in RAM)
+  }
+  pixelQueue++;                             //  Advance current pixel
+  if(pixelQueue >= 3)
+    pixelQueue = 0;                         //  Loop the pattern from the first LED
+}
+
+// Rainbow cycle along whole strip. Pass delay time (in ms) between frames.
+void rainbow(uint8_t wait) {
+  if(pixelInterval != wait)
+    pixelInterval = wait;                   
+  for(uint16_t i=0; i < pixelNumber; i++) {
+    strip.setPixelColor(i, Wheel((i + pixelCycle) & 255)); //  Update delay time  
+  }
+  strip.show();                             //  Update strip to match
+  pixelCycle++;                             //  Advance current cycle
+  if(pixelCycle >= 256)
+    pixelCycle = 0;                         //  Loop the cycle back to the begining
+}
+
+//Theatre-style crawling lights with rainbow effect
+void theaterChaseRainbow(uint8_t wait) {
+  if(pixelInterval != wait)
+    pixelInterval = wait;                   //  Update delay time  
+  for(int i=0; i < pixelNumber; i+=3) {
+    strip.setPixelColor(i + pixelQueue, Wheel((i + pixelCycle) % 255)); //  Update delay time  
+  }
+  strip.show();
+  for(int i=0; i < pixelNumber; i+=3) {
+    strip.setPixelColor(i + pixelQueue, strip.Color(0, 0, 0)); //  Update delay time  
+  }      
+  pixelQueue++;                           //  Advance current queue  
+  pixelCycle++;                           //  Advance current cycle
+  if(pixelQueue >= 3)
+    pixelQueue = 0;                       //  Loop
+  if(pixelCycle >= 256)
+    pixelCycle = 0;                       //  Loop
+}
+
+// Input a value 0 to 255 to get a color value.
+// The colours are a transition r - g - b - back to r.
+uint32_t Wheel(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if(WheelPos < 85) {
+    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  }
+  if(WheelPos < 170) {
+    WheelPos -= 85;
+    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+  WheelPos -= 170;
+  return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+}
+
+
 
 
 // sfranzyshen
