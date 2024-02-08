@@ -23,14 +23,18 @@
 #define RGB   A1  // Neopixel pin (output)
 #define LEDS  8   // Number of Neopixels
 
+// servo predefined positions
+#define SRVO_ON   0     // servo laser On position
+#define SRVO_OFF  90    // servo laser Off position
+
+// Stepper speed variables
+int MaxSpeed          = 500;   // maximum speed for stepper
+int MinSpeed          = 25;    // minimum speed for stepper
+
 // Stepper predefined direction
 #define STOP  0
 #define CW    1
 #define CCW   2
-
-// servo predefined positions
-#define SRVO_ON   0     // servo laser On position
-#define SRVO_OFF  90    // servo laser Off position
 
 // Predefined RGB Led patterns
 #define CWR  0  // colorWipeRed
@@ -41,10 +45,9 @@
 #define TCB  5  // theaterChaseBlue
 #define RNB  6  // rainbow
 #define TCRB 7  // theaterChaseRainbow
+#define BLK  7  // allblack (off)
 
-// Stepper variables
-int MaxSpeed          = 500;   // maximum speed for stepper
-int MinSpeed          = 25;    // minimum speed for stepper
+// Stepper more variables
 int Speed             = STOP;  // initial speed stopped
 //int MaxAcceleration = 200;   // maximum acceleration for stepper
 //int MinAcceleration = 20;    // minimum acceleration for stepper
@@ -341,6 +344,9 @@ void Neoloop() {
   if(currentMillis - pixelPrevious >= pixelInterval) {        //  Check for expired time
     pixelPrevious = currentMillis;                            //  Run current frame
     switch (patternCurrent) {
+      case BLK:
+        colorWipe(strip.Color(0, 0, 0), 50); // Blackout wipe
+        break;
       case TCRB:
         theaterChaseRainbow(50); // Rainbow-enhanced theaterChase variant
         break;
