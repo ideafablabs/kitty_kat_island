@@ -26,14 +26,14 @@
 #define LEDS  8   // Number of Neopixels
 
 // servo predefined positions
-#define SRVO_ON   0     // servo laser On position
-#define SRVO_OFF  90    // servo laser Off position
-#define SRVO_MIN 1000 // 1 ms pulse
-#define SRVO_MAX 2000 // 2 ms pulse
+#define SRVO_ON   180   // servo laser On position
+#define SRVO_OFF  20    // servo laser Off position
+#define SRVO_MIN  1000  // 1 ms pulse
+#define SRVO_MAX  2000  // 2 ms pulse
 
 // Stepper speed variables
-int MaxSpeed          = 500;   // maximum speed for stepper
-int MinSpeed          = 25;    // minimum speed for stepper
+int MaxSpeed  = 500;   // maximum speed for stepper
+int MinSpeed  = 25;    // minimum speed for stepper
 
 // Stepper predefined direction
 #define STOP  0
@@ -44,12 +44,9 @@ int MinSpeed          = 25;    // minimum speed for stepper
 #define CWR  0  // colorWipeRed
 #define CWG  1  // colorWipeGreen
 #define CWB  2  // colorWipeBlue
-#define TCW  3  // theaterChaseWhite
-#define TCR  4  // theaterChaseRed
-#define TCB  5  // theaterChaseBlue
-#define RNB  6  // rainbow
-#define TCRB 7  // theaterChaseRainbow
-#define BLK  8  // allblack (off)
+#define RNB  3  // rainbow
+#define TCRB 4  // theaterChaseRainbow
+#define BLK  5  // colorWipeBlack (off)
 
 // Stepper more variables
 int Speed             = STOP;  // initial speed stopped
@@ -68,8 +65,8 @@ int JoyUp_curr      = HIGH;
 int JoyUp_last      = HIGH;
 int JoyDown_curr    = HIGH;
 int JoyDown_last    = HIGH;
-int ArcadeA_curr      = HIGH;
-int ArcadeA_last      = HIGH;
+int ArcadeA_curr    = HIGH;
+int ArcadeA_last    = HIGH;
 int ArcadeB_curr    = HIGH;
 int ArcadeB_last    = HIGH;
 
@@ -84,7 +81,7 @@ unsigned long    pixelPrevious     = 0;        // Previous Pixel Millis
 //unsigned long    patternPrevious   = 0;        // Previous Pattern Millis
 int              patternCurrent    = RNB;      // Current Pattern Number (Rainbow)
 //int              patternInterval   = 5000;     // Pattern Interval (ms)
-int              pixelInterval     = 50;       // Pixel Interval (ms)
+int              pixelInterval     = 100;       // Pixel Interval (ms)
 int              pixelQueue        = 0;        // Pattern Pixel Queue
 int              pixelCycle        = 0;        // Pattern Pixel Cycle
 uint16_t         pixelCurrent      = 0;        // Pattern Current Pixel Number
@@ -210,10 +207,28 @@ void readArcade() {
   ArcadeB_curr = digitalRead(ABB);
   
   if(ArcadeA_curr != ArcadeA_last) {
+    if(ArcadeA_curr == HIGH) {
+      Serial.println("Arcade A off");
+      // do nothing
+    } else {
+      Serial.println("Arcade A on");
+      if(patternCurrent + 1 > 5) {
+        patternCurrent = 0;
+      } else {
+        patternCurrent = patternCurrent + 1;
+      }
+    }
     ArcadeA_last = ArcadeA_curr;
   }
 
   if(ArcadeB_curr != ArcadeB_last) {
+    if(ArcadeB_curr == HIGH) {
+      Serial.println("Arcade B off");
+      Servo_curr = SRVO_OFF;
+    } else {
+      Serial.println("Arcade B on");
+      Servo_curr = SRVO_ON;
+    }
     ArcadeB_last = ArcadeB_curr;
   }
 }
@@ -323,6 +338,7 @@ void readJoystick() {
 void readSpeed() {
  Speed = map((analogRead(SPD)), 0, 1023, MinSpeed, MaxSpeed);
 }
+
 /*
 // Read analog potentiometer / calculate acceleration
 void readAcceleration() {
@@ -357,15 +373,6 @@ void Neoloop() {
       case RNB:
         rainbow(10); // Flowing rainbow cycle along the whole strip
         break;     
-      case TCB:
-        theaterChase(strip.Color(0, 0, 127), 50); // Blue
-        break;
-      case TCR:
-        theaterChase(strip.Color(127, 0, 0), 50); // Red
-        break;
-      case TCW:
-        theaterChase(strip.Color(127, 127, 127), 50); // White
-        break;
       case CWB:
         colorWipe(strip.Color(0, 0, 255), 50); // Blue
         break;
@@ -387,24 +394,6 @@ void colorWipe(uint32_t color, int wait) {
   pixelCurrent++;                           //  Advance current pixel
   if(pixelCurrent >= pixelNumber)           //  Loop the pattern from the first LED
     pixelCurrent = 0;
-}
-
-// Theater-marquee-style chasing lights. Pass in a color (32-bit value,
-// a la strip.Color(r,g,b) as mentioned above), and a delay time (in ms)
-// between frames.
-void theaterChase(uint32_t color, int wait) {
-  if(pixelInterval != wait)
-    pixelInterval = wait;                   //  Update delay time
-  for(int i = 0; i < pixelNumber; i++) {
-    strip.setPixelColor(i + pixelQueue, color); //  Set pixel's color (in RAM)
-  }
-  strip.show();                             //  Update strip to match
-  for(int i=0; i < pixelNumber; i+=3) {
-    strip.setPixelColor(i + pixelQueue, strip.Color(0, 0, 0)); //  Set pixel's color (in RAM)
-  }
-  pixelQueue++;                             //  Advance current pixel
-  if(pixelQueue >= 3)
-    pixelQueue = 0;                         //  Loop the pattern from the first LED
 }
 
 // Rainbow cycle along whole strip. Pass delay time (in ms) between frames.
