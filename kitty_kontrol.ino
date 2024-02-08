@@ -1,10 +1,11 @@
-// kitty_kontrol.ino - code to kontrol operation of stepper motor in the cats head
+// kitty_kontrol.ino - code to kontrol operation of stepper motor in the cats head (and more)
 // 1/31/2024 - Idea Fab Labs, Chico
 // current issue: runSpeed() doesn't support acceleration ...
 
 #include <AccelStepper.h>
-#include <Servo.h>
+//#include <Servo.h>
 #include <Adafruit_NeoPixel.h>
+#include <Adafruit_TiCoServo.h>
 
 // Pin usage defines
 #define PUL   9   // Stepper Pulse pin (output)
@@ -26,6 +27,8 @@
 // servo predefined positions
 #define SRVO_ON   0     // servo laser On position
 #define SRVO_OFF  90    // servo laser Off position
+#define SRVO_MIN 1000 // 1 ms pulse
+#define SRVO_MAX 2000 // 2 ms pulse
 
 // Stepper speed variables
 int MaxSpeed          = 500;   // maximum speed for stepper
@@ -93,7 +96,7 @@ AccelStepper stepper(AccelStepper::DRIVER, PUL, DIR);
 Adafruit_NeoPixel strip(LEDS, RGB, NEO_GRB + NEO_KHZ800);
 
 // Define servo object to control a servo
-Servo servo;
+Adafruit_TiCoServo servo;
 int Servo_curr = SRVO_OFF;
 int Servo_last = SRVO_OFF;
 
@@ -129,7 +132,7 @@ void setup() {
   stepper.setSpeed(Speed);
 
 // Initialize servo settings
-  servo.attach(SRV);  // attaches the servo to the servo object
+  servo.attach(SRV, SRVO_MIN, SRVO_MAX);  // attaches the servo to the servo object
   servo.write(Servo_curr);
 }
 
