@@ -1,6 +1,6 @@
-## kitty_kat_island ~ Code for the kitty kat island (Love Burn 2024)
+## kitty_kat_island ~ Code for the kitty kat island (Love Burn 2024) cat
 
-### kitty_kontrol.ino ~ Code for the laser cat head stepper kontrol:
+### kitty_kontrol.ino ~ laser cat head stepper kontrol:
 
 <img height="250" src="https://raw.githubusercontent.com/ideafablabs/kitty_kat_island/main/kitty_kontrol5.png"><img height="250" src="https://raw.githubusercontent.com/ideafablabs/kitty_kat_island/main/kitty_kode.png">
 
