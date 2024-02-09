@@ -8,22 +8,25 @@
 #include <Adafruit_NeoPixel.h>
 #include <Adafruit_TiCoServo.h>
 
-// Pin usage defines
+// Pin usage defines (* = required to be this pin do not move)
 #define PUL   9   // Stepper Pulse pin (output)
 #define DIR   8   // Stepper Direction pin (output)
 #define JUP   6   // Joystick Up pin (input)
 #define JDN   4   // Joystick Down pin (input)
 #define JLT   5   // Joystick Left pin (input)
 #define JRT   7   // Joystick Right pin (input)
-#define SRV   10  // Servo pin (output)
+#define SRV   10  // Servo pin (output) *
 #define ABA   A2  // Arcade button #A pin (input)
 #define ABB   11  // Arcade button #B pin (input)
-#define LLS   3   // Left Limit Switch pin (input ~ interrupt)
-#define RLS   2   // Right Limit Switch pin (input ~ interrupt)
-#define SPD   A0  // Potentiometer for speed pin (input ~ analog)
+#define LLS   3   // Left Limit Switch pin (input ~ interrupt) *
+#define RLS   2   // Right Limit Switch pin (input ~ interrupt) *
+#define SPD   A0  // Potentiometer for speed pin (input ~ analog) *
 //#define ACC   A7  // Potentiometer for acceleration pin (input ~ analog)
+
+// Neopixel defines
 #define RGB   A1  // Neopixel pin (output)
 #define LEDS  8   // Number of Neopixels
+#define BRGT  50  // Set brightness to about 1/5 (max = 255)
 
 // servo predefined positions
 #define SRVO_ON   180   // servo laser On position
@@ -33,7 +36,9 @@
 
 // Stepper speed variables
 int MaxSpeed  = 500;   // maximum speed for stepper
-int MinSpeed  = 25;    // minimum speed for stepper
+int MinSpeed  = 50;    // minimum speed for stepper
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------
 
 // Stepper predefined direction
 #define STOP  0
@@ -81,7 +86,7 @@ unsigned long    pixelPrevious     = 0;        // Previous Pixel Millis
 //unsigned long    patternPrevious   = 0;        // Previous Pattern Millis
 int              patternCurrent    = RNB;      // Current Pattern Number (Rainbow)
 //int              patternInterval   = 5000;     // Pattern Interval (ms)
-int              pixelInterval     = 100;       // Pixel Interval (ms)
+int              pixelInterval     = 50;       // Pixel Interval (ms)
 int              pixelQueue        = 0;        // Pattern Pixel Queue
 int              pixelCycle        = 0;        // Pattern Pixel Cycle
 uint16_t         pixelCurrent      = 0;        // Pattern Current Pixel Number
@@ -104,9 +109,9 @@ void setup() {
   Serial.println("Startup ...");
 
 // Initialize NeoPixel driver  
-  strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-  strip.show();            // Turn OFF all pixels ASAP
-  strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
+  strip.begin();             // INITIALIZE NeoPixel strip object (REQUIRED)
+  strip.show();              // Turn OFF all pixels ASAP
+  strip.setBrightness(BRGT); // Set BRGT to about 1/5 (max = 255)
   
 // Initialize digital pins
   pinMode(LED_BUILTIN, OUTPUT);   // onboard LED
