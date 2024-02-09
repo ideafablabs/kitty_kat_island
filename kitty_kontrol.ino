@@ -17,7 +17,7 @@
 #define JRT   7   // Joystick Right pin (input)
 #define SRV   10  // Servo pin (output) *
 #define ABA   A2  // Arcade button #A pin (input)
-#define ABB   11  // Arcade button #B pin (input)
+#define ABB   A3  // Arcade button #B pin (input)
 #define LLS   3   // Left Limit Switch pin (input ~ interrupt) *
 #define RLS   2   // Right Limit Switch pin (input ~ interrupt) *
 #define SPD   A0  // Potentiometer for speed pin (input ~ analog) *
