@@ -17,7 +17,7 @@
 #define JRT   7   // Joystick Right pin (input)
 #define SRV   10  // Servo pin (output) *
 #define ABA   A2  // Arcade button #A pin (input)
-#define ABB   A3  // Arcade button #B pin (input)
+#define ABB   11  // Arcade button #B pin (input)
 #define LLS   3   // Left Limit Switch pin (input ~ interrupt) *
 #define RLS   2   // Right Limit Switch pin (input ~ interrupt) *
 #define SPD   A0  // Potentiometer for speed pin (input ~ analog) *
@@ -44,6 +44,8 @@ int MinSpeed  = 50;    // minimum speed for stepper
 #define STOP  0
 #define CW    1
 #define CCW   2
+#define RIGHT CCW
+#define LEFT  CW
 
 // Predefined RGB Led patterns
 #define CWR  0  // colorWipeRed
@@ -163,8 +165,8 @@ void moveStepper() {
     readSpeed();
     //readAcceleration();
     //stepper.setAcceleration(Acceleration);
-    if(RUNNING == CCW) {
-      Speed = -Speed; // CCW
+    if(RUNNING == RIGHT) {
+      Speed = -Speed; // RIGHT
     }
     stepper.setSpeed(Speed);
   }
@@ -184,7 +186,7 @@ void checkLimits() {
     if(AUTOMATIC) {
       stateRight_last = HIGH;
       stateRight_curr = HIGH;      
-      RUNNING = CW;
+      RUNNING = LEFT;
       digitalWrite(LED_BUILTIN, HIGH);
     }
   } else {
@@ -199,7 +201,7 @@ void checkLimits() {
       if(AUTOMATIC) {
         stateLeft_last = HIGH;
         stateLeft_curr = HIGH;        
-        RUNNING = CCW;
+        RUNNING = RIGHT;
         digitalWrite(LED_BUILTIN, HIGH);
       }
     }
@@ -271,7 +273,7 @@ void readJoystick() {
         stateRight_curr = HIGH;        
       }
       Serial.println("Left ...");
-      RUNNING = CW;
+      RUNNING = LEFT;
       digitalWrite(LED_BUILTIN, HIGH);
     }
     JoyLeft_last = JoyLeft_curr;
@@ -303,7 +305,7 @@ void readJoystick() {
         stateLeft_curr = HIGH;        
       }
       Serial.println("Right ...");
-      RUNNING = CCW;
+      RUNNING = RIGHT;
       digitalWrite(LED_BUILTIN, HIGH);
     }
     JoyRight_last = JoyRight_curr;
@@ -317,7 +319,11 @@ void readJoystick() {
         return;
       }
       AUTOMATIC = true;
-      RUNNING = CCW; // FIXME test for tripped limit switches and go the other way ...
+      if(stateRight_last == LOW) {
+        RUNNING = LEFT;
+      } else {
+        RUNNING = RIGHT;
+      }
       digitalWrite(LED_BUILTIN, HIGH);
       Serial.println("Automatic started ...");
     }
