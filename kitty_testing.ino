@@ -1,4 +1,4 @@
-// kitty_testing.ino - code to test operation of switches
+// kitty_testing.ino - code to test operation switches
 // 2/15/2024 - Idea Fab Labs, Chico
 
 // Pin usage defines (* = required to be this pin do not move)
@@ -52,6 +52,9 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(LLS), limitLeft, FALLING);
   attachInterrupt(digitalPinToInterrupt(RLS), limitRight, FALLING);
 
+  // Poll current limit switch state ...
+  stateRight_curr = digitalRead(RLS);
+  stateLeft_curr = digitalRead(LLS);
 }
 
 // The loop 
