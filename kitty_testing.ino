@@ -160,11 +160,13 @@ void readJoystick() {
 // Left limit-switch ISR
 void limitLeft() {
   stateLeft_curr = LOW;  // slim and clean ISR
+  stateLeft_last = HIGH; // force last state
 }
 
 // Right limit-switch ISR
 void limitRight() {
   stateRight_curr = LOW;  // slim and clean ISR
+  stateRight_last = HIGH; // force last state  
 }
 
 
