@@ -159,20 +159,12 @@ void readJoystick() {
 
 // Left limit-switch ISR
 void limitLeft() {
-  if(digitalRead(LLS)) {
-    stateLeft_curr = HIGH;  // slim and clean ISR
-  } else {
-    stateLeft_curr = LOW;  // slim and clean ISR
-  }
+  stateLeft_curr = digitalRead(LLS);  // slim and clean ISR
 }
 
 // Right limit-switch ISR
 void limitRight() {
-  if(digitalRead(RLS)) {
-    stateRight_curr = HIGH;  // slim and clean ISR
-  } else {
-    stateRight_curr = LOW;  // slim and clean ISR
-  }
+  stateRight_curr = digitalRead(RLS);  // slim and clean ISR
 }
 
 // sfranzyshen
