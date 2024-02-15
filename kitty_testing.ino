@@ -49,8 +49,8 @@ void setup() {
 // Initialize Limit-switch Interrupts
   pinMode(LLS, INPUT_PULLUP);
   pinMode(RLS, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(LLS), limitLeft, FALLING);
-  attachInterrupt(digitalPinToInterrupt(RLS), limitRight, FALLING);
+  attachInterrupt(digitalPinToInterrupt(LLS), limitLeft, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(RLS), limitRight, CHANGE);
 
   // Poll current limit switch state ...
   stateRight_curr = digitalRead(RLS);
@@ -159,16 +159,20 @@ void readJoystick() {
 
 // Left limit-switch ISR
 void limitLeft() {
-  stateLeft_curr = LOW;  // slim and clean ISR
-  stateLeft_last = HIGH; // force last state
+  if(digitalRead(LLS)) {
+    stateLeft_curr = HIGH;  // slim and clean ISR
+  } else {
+    stateLeft_curr = LOW;  // slim and clean ISR
+  }
 }
 
 // Right limit-switch ISR
 void limitRight() {
-  stateRight_curr = LOW;  // slim and clean ISR
-  stateRight_last = HIGH; // force last state  
+  if(digitalRead(RLS)) {
+    stateRight_curr = HIGH;  // slim and clean ISR
+  } else {
+    stateRight_curr = LOW;  // slim and clean ISR
+  }
 }
-
-
 
 // sfranzyshen
