@@ -17,7 +17,7 @@
 #define JRT   7   // Joystick Right pin (input)
 #define SRV   10  // Servo pin (output) *
 #define ABA   A2  // Arcade button #A pin (input)
-#define ABB   11  // Arcade button #B pin (input)
+#define ABB   A3  // Arcade button #B pin (input)
 #define LLS   3   // Left Limit Switch pin (input ~ interrupt) *
 #define RLS   2   // Right Limit Switch pin (input ~ interrupt) *
 #define SPD   A0  // Potentiometer for speed pin (input ~ analog) *
@@ -130,6 +130,24 @@ void setup() {
   pinMode(RLS, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(LLS), limitLeft, FALLING);
   attachInterrupt(digitalPinToInterrupt(RLS), limitRight, FALLING);
+
+// initialized limit switch variables
+  stateRight_curr = digitalRead(RLS);
+  stateLeft_curr  = digitalRead(LLS);
+
+  if(stateRight_curr == LOW) {
+    Serial.println("Startin up on the right limit ...");
+  } else {
+    if(stateLeft_curr == LOW) {
+      Serial.println("Startin up on the left limit ...");
+    }
+  }
+  if(stateRight_curr == LOW && stateLeft_curr == LOW) {
+    Serial.println("Did you dumb-dumbs hook to the NC and not the NO pins on the switches again? ...");    
+  }
+
+  stateRight_last = stateRight_curr;
+  stateLeft_last  = stateLeft_curr;
 
 // Initialize stepper settings
   //stepper.setAcceleration(Acceleration);
