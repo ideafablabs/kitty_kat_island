@@ -1,6 +1,6 @@
 // kitty_kontrol_homing.ino - code to kontrol operation of stepper motor in the cats head (and more)
 // this version has a homing cycle using limit switches at the startup ...
-// 1/31/2024 - Idea Fab Labs, Chico
+// 2/17/2024 - Idea Fab Labs, Chico
 
 #include <AccelStepper.h>
 #include <Adafruit_NeoPixel.h>
@@ -33,11 +33,12 @@
 #define SRVO_MAX  2000  // 2 ms pulse
 
 // Stepper speed variables
-int MaxSpeed  = 500;   // maximum speed for stepper
-int MinSpeed  = 25;    // minimum speed for stepper
-int MaxAcceleration = 200;   // maximum acceleration for stepper
-int MinAcceleration = 20;    // minimum acceleration for stepper
-int Acceleration    = 20;    // initial acceleration rate
+int MaxSpeed  = 50;        // maximum speed for stepper
+int MinSpeed  = 25;        // minimum speed for stepper
+int MaxAcceleration = 200; // maximum acceleration for stepper
+int MinAcceleration = 10;   // minimum acceleration for stepper
+int Acceleration    = 20;  // initial acceleration rate
+
 //---------------------------------------------------------------------------------------------------------------------------------------------------
 
 // Stepper predefined direction
@@ -46,6 +47,7 @@ int Acceleration    = 20;    // initial acceleration rate
 #define CCW   2
 #define RIGHT CCW
 #define LEFT  CW
+#define ERR   -1
 
 // Predefined RGB Led patterns
 #define CWR  0  // colorWipeRed
@@ -56,38 +58,39 @@ int Acceleration    = 20;    // initial acceleration rate
 #define BLK  5  // colorWipeBlack (off)
 
 // Stepper more variables
-int Speed             = STOP;  // initial speed stopped
-int MaxAcceleration = 200;   // maximum acceleration for stepper
-int MinAcceleration = 20;    // minimum acceleration for stepper
-int Acceleration    = 20;    // initial acceleration rate
-int RUNNING           = STOP;  // are we moving? and in what direction?
-bool AUTOMATIC        = false; // are we in automatic (bounce) mode
+int Speed       = STOP;   // initial speed stopped
+int loc_offset  = 10;     // offset used to move away from limit switch after encounter
+int loc_start   = 0;      // initial start (left) location
+int loc_mid     = 5;      // initial middle location
+int loc_end     = 10;     // initial end (right) location
+int RUNNING     = STOP;   // are we moving? and in what direction?
+bool AUTOMATIC  = false;  // are we in automatic (bounce) mode
 
 // Joystick  & Arcade button variables
-int JoyLeft_curr    = HIGH;
-int JoyLeft_last    = HIGH;
-int JoyRight_curr   = HIGH;
-int JoyRight_last   = HIGH;
-int JoyUp_curr      = HIGH;
-int JoyUp_last      = HIGH;
-int JoyDown_curr    = HIGH;
-int JoyDown_last    = HIGH;
-int ArcadeA_curr    = HIGH;
-int ArcadeA_last    = HIGH;
-int ArcadeB_curr    = HIGH;
-int ArcadeB_last    = HIGH;
+byte JoyLeft_curr    = HIGH;
+byte JoyLeft_last    = HIGH;
+byte JoyRight_curr   = HIGH;
+byte JoyRight_last   = HIGH;
+byte JoyUp_curr      = HIGH;
+byte JoyUp_last      = HIGH;
+byte JoyDown_curr    = HIGH;
+byte JoyDown_last    = HIGH;
+byte ArcadeA_curr    = HIGH;
+byte ArcadeA_last    = HIGH;
+byte ArcadeB_curr    = HIGH;
+byte ArcadeB_last    = HIGH;
 
 // Interrupts variables
-//int stateRight_curr = HIGH;
-//int stateLeft_curr  = HIGH;
-//int stateRight_last = HIGH;
-//int stateLeft_last  = HIGH;
+volatile byte stateRight_curr = HIGH;
+volatile byte stateLeft_curr  = HIGH;
+byte stateRight_last = HIGH;
+byte stateLeft_last  = HIGH;
 
 // neopixel variables
 unsigned long    pixelPrevious     = 0;        // Previous Pixel Millis
-//unsigned long    patternPrevious   = 0;        // Previous Pattern Millis
+unsigned long    patternPrevious   = 0;        // Previous Pattern Millis
 int              patternCurrent    = RNB;      // Current Pattern Number (Rainbow)
-//int              patternInterval   = 5000;     // Pattern Interval (ms)
+int              patternInterval   = 5000;     // Pattern Interval (ms)
 int              pixelInterval     = 50;       // Pixel Interval (ms)
 int              pixelQueue        = 0;        // Pattern Pixel Queue
 int              pixelCycle        = 0;        // Pattern Pixel Cycle
@@ -131,17 +134,28 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(LLS), limitLeft, FALLING);
   attachInterrupt(digitalPinToInterrupt(RLS), limitRight, FALLING);
 
+// Initialize servo settings
+  servo.attach(SRV, SRVO_MIN, SRVO_MAX);  // attaches the servo to the servo object
+  servo.write(Servo_curr);
+
 // initialized limit switch variables
   stateRight_curr = digitalRead(RLS);
   stateLeft_curr  = digitalRead(LLS);
 
 // FIXME: finish homing cycle ...
-
-// Initialize servo settings
-  servo.attach(SRV, SRVO_MIN, SRVO_MAX);  // attaches the servo to the servo object
-  servo.write(Servo_curr);
+/*
+  check if on left limit switch ...
+    if yes ... stop ... set (start) location to zero ... 
+    if no start moving (slowly) in the left direction
+      when limit switch is reached ... stop ... set (start) location to loc_start 
+        (this is the start location)
+    start moving (slowly) in right direction
+  when limit switch is reached ... stop ... set (end) location to loc_end
+        (this is the end location)
+        set (middle) loc_mid to location end divided in half [loc_end/2]
+        (this is the middle location)
+*/
 }
-
 
 // The loop 
 void loop() {
@@ -163,6 +177,7 @@ void moveServo() {
 
 // Move stepper / update speed
 void moveStepper() {
+/* FIXME:
   if(RUNNING > STOP) {
     readSpeed();
     //readAcceleration();
@@ -173,10 +188,12 @@ void moveStepper() {
     stepper.setSpeed(Speed);
   }
   stepper.runSpeed();
+  */
 }
 
 // Check limit-switches & Process 
 void checkLimits() {
+/* FIXME:
   if(stateRight_curr != stateRight_last) {
     Serial.println("Right Limit Hit! ...");
     RUNNING = STOP;
@@ -208,6 +225,7 @@ void checkLimits() {
       }
     }
   }
+*/
 }
 
 // Read Arcade buttons & Process
@@ -251,6 +269,7 @@ void readJoystick() {
 
 // Joystick left switch
   if(JoyLeft_curr != JoyLeft_last) {
+/*
     if(JoyLeft_curr == HIGH) {
       Serial.println("Stop ...");
       RUNNING = STOP;
@@ -278,11 +297,14 @@ void readJoystick() {
       RUNNING = LEFT;
       digitalWrite(LED_BUILTIN, HIGH);
     }
+*/    
     JoyLeft_last = JoyLeft_curr;
   } 
 
 // Joystick right switch
   if(JoyRight_curr != JoyRight_last) {
+/*FIXME:
+  }
     if(JoyRight_curr == HIGH) {
       Serial.println("Stop ...");
       RUNNING = STOP;
@@ -310,6 +332,7 @@ void readJoystick() {
       RUNNING = RIGHT;
       digitalWrite(LED_BUILTIN, HIGH);
     }
+*/
     JoyRight_last = JoyRight_curr;
   }
 
@@ -320,6 +343,7 @@ void readJoystick() {
         Serial.println("Automatic already running ...");
         return;
       }
+/* FIXME:      
       AUTOMATIC = true;
       if(stateRight_last == LOW) {
         RUNNING = LEFT;
@@ -328,13 +352,16 @@ void readJoystick() {
       }
       digitalWrite(LED_BUILTIN, HIGH);
       Serial.println("Automatic started ...");
+*/      
     }
+    
     JoyUp_last = JoyUp_curr;
   }
   
 // Joystick down switch  
   if(JoyDown_curr != JoyDown_last) {
     if(JoyDown_curr == LOW) {
+/* FIXME:
       if(AUTOMATIC) {
         AUTOMATIC = false;
         RUNNING = STOP;
@@ -342,6 +369,7 @@ void readJoystick() {
         digitalWrite(LED_BUILTIN, LOW);
         Serial.println("Automatic stopped ...");
       }
+*/      
     }
     JoyDown_last = JoyDown_curr;
   }  
@@ -458,3 +486,4 @@ uint32_t Wheel(byte WheelPos) {
 
 
 // sfranzyshen
+
